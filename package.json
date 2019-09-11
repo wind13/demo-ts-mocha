@@ -1,0 +1,30 @@
+{
+  "name": "fizzbuzz-ts-mocha",
+  "version": "1.0.0",
+  "description": "FizzBuzz Game in TypeScript and Mocha",
+  "main": "main.ts",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "typescript",
+    "mocha",
+    "fizzbuzz"
+  ],
+  "author": "Simon Jun Sheng Liu - wind13@163.com",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "^4.2.0",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^12.7.1",
+    "@types/ramda": "^0.26.19",
+    "chai": "^4.2.0",
+    "mocha": "^6.2.0",
+    "ts-node": "^8.3.0",
+    "tslint": "^5.18.0",
+    "typescript": "^3.5.3"
+  },
+  "dependencies": {
+    "ramda": "^0.26.1"
+  }
+}
