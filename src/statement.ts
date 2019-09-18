@@ -1,79 +1,48 @@
-export const plays = {
-  "hamlet": {"name": "Hamlet", "type": "tragedy"},
-  "as-like": {"name": "As You Like It", "type": "comedy"},
-  "othello": {"name": "Othello", "type": "tragedy"}
+import { plays } from "./plays";
+import { invoices } from "./invoices";
+import { playType } from "./play-type";
+import { usd } from "./usd";
+
+export function statement(invoice:any, plays: any) {
+  return {
+    customer: invoice.customer,
+    totalAmount: totalOf('amount')(invoice.performances, plays),
+    totalCredits: totalOf('credits')(invoice.performances, plays),
+    perfInfo: totalOf('genPerfInfoText')(invoice.performances, plays),
+    perfInfoHTML: totalOf('genPerfInfoHTML')(invoice.performances, plays)
+  };
 }
 
-export const invoices = [
-  {
-    "customer": "BigGo",
-    "performances": [
-      {
-        "playID": "hamlet",
-        "audience": 55
-      },
-      {
-        "playID": "as-like",
-        "audience": 35
-      },
-      {
-        "playID": "othello",
-        "audience": 40
-      }
-    ]
-  }
-];
-
-export function statement(invoice, plays) {
-  let totalAmount = 0;
-  let volumeCredits = 0;
-  let result = `Statement for ${invoice.customer}\n`;
-  const format = new Intl.NumberFormat("en-US", {
-    style: "currency", currency: "USD",
-    minimumFractionDigits: 2
-  }).format;
-
-  // console.log('invoice: ', invoice)
-  // console.log('performances: ', invoice.performances)
-  for (const perf of invoice.performances) {
-    const play = plays[perf.playID];
-    let thisAmount = 0;
-
-    switch (play.type) {
-      case "tragedy":
-        thisAmount = 40000;
-        if (perf.audience > 30) {
-          thisAmount += 1000 * (perf.audience - 30);
-        }
-        break;
-      case "comedy":
-        thisAmount = 30000;
-        if (perf.audience > 20) {
-          thisAmount += 10000 + 500 * (perf.audience - 20);
-        }
-        thisAmount += 300 * perf.audience;
-        break;
-    
-      default:
-        throw new Error(`unkown type: ${play.type}`);
-    }
-
-    // add volume credits
-    volumeCredits += Math.max(perf.audience - 30, 0);
-    // add extra credits for every ten comedy attendees
-    if ("comedy" === play.type) {
-      volumeCredits += Math.floor(perf.audience / 5);
-    }
-
-    // print line for this order
-    result += `  ${play.name}: ${format(thisAmount/100)} (${perf.audience} seats)\n`;
-    totalAmount += thisAmount;
-  }
-  result += `Amount owed is ${format(totalAmount/100)}\n`;
-  result += `You earned ${volumeCredits} credits`;
+export function renderPlainText(data) {
+  let result = `Statement for ${data.customer}\n`;
+  result += data.perfInfo;
+  result += `Amount owed is ${usd(data.totalAmount)}\n`;
+  result += `You earned ${data.totalCredits} credits`;
   return result;
 }
 
+export function renderHTML(data) {
+  let result = `<h1>Statement for ${data.customer}</h1>\n`
+  result += "<table>\n"
+  result += "<tr><th>play</th><th>seats</th><th>cost</th></tr>"
+  result += data.perfInfoHTML;
+  result += "</table>\n"
+  result += `<p>Amount owed is <em>${usd(data.totalAmount)}</em></p>\n`
+  result += `<p>You earned <em>${data.totalCredits}</em> credits</p>`
+  return result
+}
 
-const r = statement(invoices[0], plays)
+const r = renderPlainText(statement(invoices[0], plays))
 console.log(r)
+
+function totalOf(fnName: string) {
+  const init = fnName.startsWith('gen') ? '' : 0
+  return (performances: any, plays: any) => {
+    return performances.reduce((total, perf) => {
+      const play = plays[perf.playID]
+      const aType = playType[play.type]
+      const fnTotal = aType[fnName]
+      return total + fnTotal(perf.audience, play)
+    }, init)
+  }
+}
