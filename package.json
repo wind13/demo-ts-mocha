@@ -2,9 +2,11 @@
   "name": "fizzbuzz-ts-mocha",
   "version": "1.0.0",
   "description": "FizzBuzz Game in TypeScript and Mocha",
-  "main": "main.ts",
+  "main": "src/main.ts",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "game": "ts-node src/main.ts",
+    "tw": "mocha --watch"
   },
   "keywords": [
     "typescript",
